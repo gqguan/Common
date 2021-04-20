@@ -14,7 +14,9 @@ end
 
 % 指定数据文件，获取其文件完整路径向量
 [File, Path] = uigetfile('*.*', prompt, 'Multiselect', 'on');
-File = reshape(File,[length(File),1]); % 确保文件名以列向量形式存放
+if iscell(File)
+    File = reshape(File,[length(File),1]); % 确保文件名以列向量形式存放
+end
 fullpaths = strcat(Path, File);
 % 确保fullpaths为胞向量（这是由于当只导入一个文件时，fullpaths为字符变量）
 if ~iscell(fullpaths)

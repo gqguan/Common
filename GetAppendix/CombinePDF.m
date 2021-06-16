@@ -1,4 +1,4 @@
-function CombinePDF(opt, SortedNames)
+function out = CombinePDF(opt, SortedNames)
 %% 合并pdf文件编目
 %
 % by Dr. Guan Guoqiang @ SCUT on 2020-07-20
@@ -61,15 +61,19 @@ switch opt
                 cprintf('err','%s - %s (%f)\n', SortedNames(iSN,2), FileNames{minIdx}, similarity)
             end
         end
-        % 由文件名识别文件内容，并将文件名另存为统一的文件名（避免出现不可识别的文件名问题）
+        % 列出缺教纲的课程名单
+        out = SortedNames(Idxes == 0,:);
 
+        % 由文件名识别文件内容，并将文件名另存为统一的文件名（避免出现不可识别的文件名问题）
         for iSN = 1:NumList
             FileProp.UID = sprintf('appx_%d.pdf',iSN);
-            FileProp.Name = FileNames{Idxes(iSN)};
-            copyfile([PathName{:},FileProp.Name], [PathName{:},'output\',FileProp.UID])
-            FileProp.Name = strcat(SortedNames(iSN,1),"：",SortedNames(iSN,2)); 
-            FileProp.Name(regexp(FileProp.Name,'_')) = []; % 下划线会导致latex代码编译出错
-            FileProps(iSN) = FileProp;
+            if Idxes(iSN) ~= 0 % 跳过不匹配的课程
+                FileProp.Name = FileNames{Idxes(iSN)};
+                copyfile([PathName{:},FileProp.Name], [PathName{:},'output\',FileProp.UID])
+                FileProp.Name = strcat(SortedNames(iSN,1),"：",SortedNames(iSN,2)); 
+                FileProp.Name(regexp(FileProp.Name,'_')) = []; % 下划线会导致latex代码编译出错
+                FileProps(iSN) = FileProp;
+            end
         end
 end
 
@@ -80,15 +84,16 @@ fileID = fopen('test1.tex','w','native','UTF-8');
 fprintf(fileID,'\\documentclass[UTF8]{ctexart}\n');
 fprintf(fileID,'\\usepackage{fancyhdr,pdfpages,tocloft}\n');
 fprintf(fileID,'\\usepackage[margin=0.5in,bottom=0.75in,top=0.75in]{geometry}\n');
+fprintf(fileID,'\\usepackage[pagebackref]{hyperref}\n');
 fprintf(fileID,'\\fancyhead{}\n');
-fprintf(fileID,'\\lfoot{附件材料}\n');
+fprintf(fileID,'\\lfoot{课程教学大纲汇编（非公共课）}\n');
 fprintf(fileID,'\\cfoot{}\n');
 fprintf(fileID,'\\rfoot{\\thepage}\n');
 fprintf(fileID,'\\renewcommand{\\headrulewidth}{0pt}\n');
 fprintf(fileID,'\\begin{document}\n');
 fprintf(fileID,'\\title{附件材料}\n');
 fprintf(fileID,'\\author{华南理工大学能源化学工程专业}\n');
-fprintf(fileID,'\\date{2020-7-30}\n');
+fprintf(fileID,'\\date{2021-6-15}\n');
 fprintf(fileID,'\\maketitle\n');
 fprintf(fileID,'\\pagenumbering{roman}\n');
 fprintf(fileID,'\\tableofcontents\n');
@@ -97,10 +102,12 @@ fprintf(fileID,'\\pagenumbering{arabic}\n');
 fprintf(fileID,'\\pagestyle{fancy}\n');
 
 for iSN = 1:FileNum
-    fprintf(fileID,'\\clearpage\n');
-    fprintf(fileID,'\\phantomsection\n');
-    fprintf(fileID,'\\addcontentsline{toc}{subsection}{%s}\n',FileProps(iSN).Name);
-    fprintf(fileID,'\\includepdf[pages={-},pagecommand={}]{%s}\n',FileProps(iSN).UID);
+    if Idxes(iSN) ~= 0
+        fprintf(fileID,'\\clearpage\n');
+        fprintf(fileID,'\\phantomsection\n');
+        fprintf(fileID,'\\addcontentsline{toc}{subsection}{%s}\n',FileProps(iSN).Name);
+        fprintf(fileID,'\\includepdf[pages={-},pagecommand={}]{%s}\n',FileProps(iSN).UID);
+    end
 end
 fprintf(fileID,'\\end{document}\n');
 fclose(fileID);

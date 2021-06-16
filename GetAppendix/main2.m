@@ -9,7 +9,7 @@ wrkDir2 = 'testPDFs2';
 % 检查示例1的工作目录是否存在
 fprintf('[1] 检查示例1的工作目录...\n')
 if exist(wrkDir2,'dir')
-    fprintf('[2] 存在工作目录%s，调用Combine()...\n',wrkDir2)
+    fprintf('[2] 存在工作目录%s，调用CombinePDF()...\n',wrkDir2)
 else
     error('示例目录\testPDFs1\不存在！')
     return
@@ -18,7 +18,7 @@ end
 %% 选定同一目录下的多个pdf文件，在新建的output目录中生成编目的laTeX代码
 fprintf('[3] 从\\%s目录中选定需要合并生成附件的多个pdf文件\n',wrkDir2)
 fprintf('[4] 从\\%s目录中载入SortedNames变量\n',wrkDir2)
-load('SortedNames.mat','SortedNames')
+load(strcat(wrkDir2,'/SortedNames.mat'),'SortedNames')
 CombinePDF(1,SortedNames)
 
 %% 输出
